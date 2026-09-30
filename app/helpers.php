@@ -21,7 +21,7 @@ function audit(string $action, string $entity, ?int $id, array $details = []): v
 }
 function money(mixed $n): string { static $decimals=null; if($decimals===null){try{$value=db()->query('SELECT amount_decimals FROM company_settings WHERE id=1')->fetchColumn();$decimals=$value===false?2:(int)$value;}catch(Throwable){$decimals=2;}} return number_format((float)$n, $decimals, '.', ','); }
 function amount_cents(string $amount): int { [$whole,$fraction]=array_pad(explode('.', $amount, 2),2,''); return ((int)$whole*100)+(int)str_pad($fraction,2,'0'); }
-function normalize_amount(string $amount): string { [$whole,$fraction]=array_pad(explode('.', $amount, 2),2,''); $whole=ltrim($whole,'0')?:'0';return $whole.'.'.str_pad($fraction,2,'0'); }
+function normalize_amount(string $amount): string { [$whole,$fraction]=array_pad(explode('.', $amount, 2),2,''); $whole=ltrim($whole,'0')?:'0';$fraction=rtrim($fraction,'0');return $whole.'.'.str_pad(substr($fraction,0,2),2,'0'); }
 function role_label(string $r): string { return ['admin'=>'管理者','bookkeeper'=>'記帳人員','approver'=>'審核人員','viewer'=>'唯讀'][$r] ?? $r; }
 function status_label(string $s): string { return ['draft'=>'草稿','pending'=>'待審核','approved'=>'已核准','rejected'=>'已退回','posted'=>'已過帳','void'=>'已作廢'][$s] ?? $s; }
 function account_type_label(string $s): string { return ['asset'=>'資產','liability'=>'負債','equity'=>'權益','revenue'=>'收入','expense'=>'費用'][$s] ?? $s; }
@@ -48,8 +48,10 @@ function posted_lines(array $input): array {
         $debitText = trim((string)($debits[$i] ?? '')); $creditText = trim((string)($credits[$i] ?? ''));
         if ($accountId === 0 && $debitText === '' && $creditText === '') continue;
         if($debitText==='')$debitText='0'; if($creditText==='')$creditText='0';
-        $amountPattern=$precision===0?'/^\d{1,16}$/':'/^\d{1,16}(\.\d{1,'.$precision.'})?$/';
-        if (!preg_match($amountPattern, $debitText) || !preg_match($amountPattern, $creditText)) throw new RuntimeException('金額格式錯誤，最多可輸入 '.$precision.' 位小數。');
+        $amountPattern='/^\d{1,16}(?:\.\d{1,18})?$/';
+        $debitFraction=str_contains($debitText,'.')?rtrim(explode('.',$debitText,2)[1],'0'):'';
+        $creditFraction=str_contains($creditText,'.')?rtrim(explode('.',$creditText,2)[1],'0'):'';
+        if (!preg_match($amountPattern, $debitText) || !preg_match($amountPattern, $creditText) || strlen($debitFraction)>$precision || strlen($creditFraction)>$precision) throw new RuntimeException('金額格式錯誤，最多可輸入 '.$precision.' 位非零小數。');
         $debit = normalize_amount($debitText); $credit = normalize_amount($creditText);
         if (($debit > 0) === ($credit > 0)) throw new RuntimeException('每筆分錄須且只能填入借方或貸方其中一側金額。');
         $lines[] = ['account_id'=>$accountId,'description'=>trim((string)($descs[$i] ?? '')),'debit'=>$debit,'credit'=>$credit];
