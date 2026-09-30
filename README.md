@@ -26,6 +26,8 @@ PHP 8 + MySQL 8 的單一帳套、單一功能性幣別複式記帳系統，供 
 
 ## Hostinger 子目錄部署
 
+- 線上系統網址：[https://darksalmon-eagle-978314.hostingersite.com/elle4336/](https://darksalmon-eagle-978314.hostingersite.com/elle4336/)。網站已部署於 Hostinger，需登入後使用；GitHub repository 公開的是程式與文件，PHP/MySQL 應用由 Hostinger 執行，不能以 GitHub Pages 執行。
+
 - 將專案放在網域 `public_html/elle4336/` 後，網址為 `https://你的網域/elle4336/`。根目錄 `index.php` 會轉入 `public/index.php`；根目錄 `.htaccess` 禁止直接瀏覽程式、SQL、設定與暫存資料夾。請確認主機允許 `.htaccess` 規則並已啟用 HTTPS。
 - 先在 hPanel 確認網站的 PHP 版本、MySQL 主機名稱及 SSH 存取狀態。SSH 若被停用或主機端拒絕連線，需先在 hPanel 開啟或使用主機提供的檔案管理器上傳。
 - 主機資料庫與帳號名稱須照 hPanel 顯示填寫；資料庫主機 `DB_HOST` 也以 hPanel 顯示值為準。部署入口會優先從 `/home/帳號/.private/elle4336/.env` 載入設定；在該檔設定 `DB_NAME`、`DB_USER`、`DB_PASS`、`DB_HOST`、`DB_PORT`、`DB_TABLE_PREFIX=elle4336_`、`APP_DEBUG=0`、`SESSION_SECURE=1` 及 `AI_STORAGE_DIR=/home/帳號/.private/elle4336/ai-intake`。
