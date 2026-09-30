@@ -1,0 +1,15 @@
+Options -Indexes
+RewriteEngine On
+RewriteRule ^assets/(.*)$ public/assets/$1 [L,NC]
+RewriteRule ^public/(?!assets/).*$ - [F,L,NC]
+RewriteRule ^(?:app|database|scripts|storage|vendor|\.git)(?:/|$) - [F,L,NC]
+
+<FilesMatch "^(?:\.env(?:\..*)?|\.gitignore|README(?:\..*)?|.*\.(?:sql|log|ini|dist|example))$">
+  Require all denied
+</FilesMatch>
+
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "DENY"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
